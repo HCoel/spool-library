@@ -130,10 +130,11 @@ erDiagram
         string material
         int nozzle_min
         int nozzle_max
-        int bed
+        int bed_min
+        int bed_max
         int dry_temp
         int dry_hours
-        int speed
+        int speed_max
         ts updated_at
     }
     PHOTO {
@@ -155,11 +156,11 @@ erDiagram
 
 | Key | Type | Required | Default / rule |
 |---|---|---|---|
-| `material` | enum: PLA, PETG, ABS, ASA, TPU, Nylon, Other | yes | - |
+| `material` | enum: PLA, PETG, ABS, ASA, TPU, Nylon, PLA Support, PLA/PETG Support, Other | yes | - |
 | `color_name` | string | no | e.g. "Jade White" |
 | `color_hex` | `#RRGGBB` | yes | colour picker or text |
 | `color_hex_2`, `color_hex_3` | `#RRGGBB` | no | used when finish = multi |
-| `finish` | enum: basic, matte, silk, sparkle, translucent, multi, glow | yes | `basic` |
+| `finish` | enum: basic, matte, silk, sparkle, translucent, multi, glow, wood | yes | `basic` |
 | `diameter` | number (mm) | yes | 1.75 |
 | `net_g` | int | yes | 1000 |
 | `empty_spool_g` | int | yes | 250 |
@@ -169,21 +170,25 @@ erDiagram
 
 ### 4.3 Print settings and presets
 
-Settings keys: `nozzle_min`, `nozzle_max`, `bed`, `dry_temp`, `dry_hours`, `speed` (speed optional, may be null).
+Settings keys: `nozzle_min`, `nozzle_max`, `bed_min`, `bed_max`, `dry_temp`, `dry_hours`, `speed_max` (mm/s, optional, may be null). Datasheets quote speed as "< N mm/s", so it is stored as a maximum. Drying uses the oven / dryer value (not the printer-heatbed alternative).
 
 Effective settings = `{...preset[material], ...overrides}`. The detail view marks overridden values with a star.
 
 Seeded presets (user-editable in Settings):
 
-| Material | Nozzle | Bed | Dry | Speed |
-|---|---|---|---|---|
-| PLA | 190-230 | 55 | 55 C / 8 h | null |
-| PETG | 230-260 | 70 | 65 C / 8 h | null |
-| ABS | 240-270 | 90 | 80 C / 8 h | null |
-| ASA | 240-270 | 90 | 80 C / 8 h | null |
-| TPU | 210-240 | 35 | 70 C / 8 h | null |
-| Nylon | 260-290 | 80 | 80 C / 12 h | null |
-| Other | null | null | null | null |
+| Material | Nozzle (C) | Bed (C) | Dry | Max speed | Source |
+|---|---|---|---|---|---|
+| PLA | 190-230 | 55-60 | 55 C / 8 h | null | generic |
+| PETG | 230-260 | 70-80 | 65 C / 8 h | null | generic |
+| ABS | 240-270 | 90-100 | 80 C / 8 h | null | generic |
+| ASA | 240-270 | 90-100 | 80 C / 8 h | null | generic |
+| TPU | 210-240 | 30-35 | 70 C / 8 h | null | generic |
+| Nylon | 260-290 | 80-100 | 80 C / 12 h | null | generic |
+| PLA Support | 220-230 | 35-45 | 55 C / 8 h | 200 | Bambu Support for PLA TDS v1.0 |
+| PLA/PETG Support | 190-240 | 35-60 | 75 C / 8 h | 100 | Bambu Support for PLA/PETG TDS |
+| Other | null | null | null | null | - |
+
+Generic rows are starting points; edit them in Settings to match the brands you use. Both Bambu support filaments ship on 0.5 kg spools, so `net_g` must be set per product (default 1000 is wrong for these).
 
 ### 4.4 Units (spools) and amount
 
@@ -208,7 +213,7 @@ GRID (home)                    PRODUCT DETAIL
 | [PLA][PETG][Silk]..|         |            Matte   |
 | [tile][tile][tile] |         | PLA - 1.75 - 1kg   |
 | [tile][tile][tile] |         | Nozzle 190-230 C   |
-|                    |         | Bed    55 C        |
+|                    |         | Bed    55-60 C     |
 | [Filament]         |         | Dry    55 C 8h *   |
 +--------------------+         | -- Spools (3) ---- |
                                | #1 ######-- ~600g  |
@@ -242,6 +247,7 @@ UNIT SHEET                     | #2 ######## Full   |
 | translucent | Fill at 60% opacity over a checkerboard |
 | multi | Pie split of `color_hex`, `color_hex_2`, `color_hex_3` (2 or 3 slices) |
 | glow | Fill + outer glow ring |
+| wood | Fill + subtle darker grain stripes |
 
 The detail view shows the photo (if any) next to the swatch.
 
@@ -284,7 +290,7 @@ flowchart LR
 |---|---|
 | hex | `/^#[0-9a-fA-F]{6}$/` |
 | nozzle | 150-350, min <= max |
-| bed | 0-120 |
+| bed_min, bed_max | 0-120, min <= max |
 | dry_temp | 30-100; dry_hours 1-48 |
 | gross_g | >= 0; below `empty_spool_g` warns "check empty spool weight" and saves remaining as 0 |
 | net_g, empty_spool_g | 1-5000 |
