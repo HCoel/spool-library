@@ -156,7 +156,7 @@ erDiagram
 
 | Key | Type | Required | Default / rule |
 |---|---|---|---|
-| `material` | enum: PLA, PETG, ABS, ASA, TPU, Nylon, PLA Support, PLA/PETG Support, Other | yes | - |
+| `material` | enum: PLA, PETG, ABS, ASA, TPU, Nylon, PLA Wood, PLA Support, PLA/PETG Support, Other | yes | - |
 | `color_name` | string | no | e.g. "Jade White" |
 | `color_hex` | `#RRGGBB` | yes | colour picker or text |
 | `color_hex_2`, `color_hex_3` | `#RRGGBB` | no | used when finish = multi |
@@ -184,6 +184,7 @@ Seeded presets (user-editable in Settings):
 | ASA | 240-270 | 90-100 | 80 C / 8 h | null | generic |
 | TPU | 210-240 | 30-35 | 70 C / 8 h | null | generic |
 | Nylon | 260-290 | 80-100 | 80 C / 12 h | null | generic |
+| PLA Wood | 210-235 | 45-60 | null | 150 | wood PLA datasheet (no drying spec given) |
 | PLA Support | 220-230 | 35-45 | 55 C / 8 h | 200 | Bambu Support for PLA TDS v1.0 |
 | PLA/PETG Support | 190-240 | 35-60 | 75 C / 8 h | 100 | Bambu Support for PLA/PETG TDS |
 | Other | null | null | null | null | - |
@@ -247,7 +248,7 @@ UNIT SHEET                     | #2 ######## Full   |
 | translucent | Fill at 60% opacity over a checkerboard |
 | multi | Pie split of `color_hex`, `color_hex_2`, `color_hex_3` (2 or 3 slices) |
 | glow | Fill + outer glow ring |
-| wood | Fill + subtle darker grain stripes |
+| wood | Fill + subtle darker grain stripes (use with material PLA Wood; finish = look, material = settings) |
 
 The detail view shows the photo (if any) next to the swatch.
 
