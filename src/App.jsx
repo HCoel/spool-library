@@ -7,6 +7,7 @@ import UpdatePrompt from './ui/UpdatePrompt.jsx'
 import Grid from './ui/Grid.jsx'
 import ProductForm from './ui/ProductForm.jsx'
 import ProductDetail from './ui/ProductDetail.jsx'
+import Settings from './ui/Settings.jsx'
 
 export default function App() {
   const route = useRoute()
@@ -23,6 +24,9 @@ export default function App() {
       break
     case 'product':
       page = <ProductDetail key={route.id} id={route.id} />
+      break
+    case 'settings':
+      page = <Settings lib={lib} />
       break
     default:
       page = <Grid lib={lib} />
