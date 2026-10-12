@@ -139,7 +139,8 @@ erDiagram
     }
     PHOTO {
         uuid id
-        blob data
+        string type
+        arraybuffer data
         ts updated_at
         bool deleted
     }
@@ -267,7 +268,7 @@ flowchart LR
 - Duplicate copies product fields and overrides, not units or photo.
 - Update amount: tap unit -> tap level or enter weight (auto-saves).
 - Delete (product or unit) requires a confirm dialog; archive is the normal path.
-- Photo: `<input type="file" accept="image/*">` (camera or library). Resized client-side to max 1200 px long edge, JPEG quality 0.8, stored as a blob.
+- Photo: `<input type="file" accept="image/*">` (camera or library). Resized client-side to max 1200 px long edge, JPEG quality 0.8, stored as `{ type, data: ArrayBuffer }` (more reliable than Blob in Safari IndexedDB).
 
 ## 6. iOS behaviour and error handling
 
