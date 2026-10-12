@@ -1,7 +1,5 @@
-:root { --bg:#111214; --card:#1c1d21; --text:#f2f2f2; --muted:#9a9ca3; --accent:#4cc38a; --danger:#e5484d; --border:#2c2e33; color-scheme: dark; }
-@media (prefers-color-scheme: light) {
-  :root { --bg:#f6f6f4; --card:#ffffff; --text:#16171a; --muted:#666a70; --accent:#1f8a5b; --danger:#c62828; --border:#e2e2df; color-scheme: light; }
-}
+/* Peach slate (rose-leaning): soft dark theme, always dark. --on-accent is text on accent fills */
+:root { --bg:#1d2024; --card:#272b31; --text:#eceae6; --muted:#a3a6ab; --accent:#f3b5ae; --on-accent:#5a2a26; --danger:#f47c7c; --border:#353a42; color-scheme: dark; }
 * { box-sizing: border-box; }
 body { margin:0; background:var(--bg); color:var(--text); font:16px/1.4 -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color:transparent; }
 #app { min-height:100dvh; padding:0 16px calc(72px + env(safe-area-inset-bottom)); }
@@ -12,9 +10,9 @@ header.bar { display:flex; align-items:center; gap:8px; padding:calc(12px + env(
 header.bar h1 { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 button, .btn { font:inherit; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:10px; padding:8px 12px; min-height:40px; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; }
 button:disabled { opacity:.5; }
-.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+.primary { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
 .danger { color:var(--danger); }
-button[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:#fff; }
+button[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
 .icon-btn { position:relative; min-width:40px; }
 .badge { position:absolute; top:4px; right:4px; width:9px; height:9px; border-radius:50%; background:var(--danger); }
 input, select, textarea { font:inherit; font-size:16px; width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--text); }

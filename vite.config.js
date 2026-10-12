@@ -16,8 +16,8 @@ export default defineConfig({
         start_url: '/spool-library/',
         scope: '/spool-library/',
         display: 'standalone',
-        background_color: '#111214',
-        theme_color: '#111214',
+        background_color: '#1d2024',
+        theme_color: '#1d2024',
         icons: [
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
