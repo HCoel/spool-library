@@ -30,3 +30,6 @@ Pushing to `main` runs the tests and deploys to GitHub Pages when they pass.
 - [ ] Add a product with a camera photo; photo shows on detail
 - [ ] Export backup to iCloud Drive via the share sheet
 - [ ] Push a change: "Update available - Reload" appears on next launch
+- [ ] Scroll a long screen: header buttons stay below the status bar / Dynamic Island
+- [ ] Export via share sheet clears the red badge; cancelling the share sheet does not
+- [ ] Type a spool location, tap the dimmed backdrop: location is kept

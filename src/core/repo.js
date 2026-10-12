@@ -73,6 +73,10 @@ export function createRepo(db, { now = () => new Date().toISOString(), uuid = ()
     return rec
   }
 
+  async function updateUnit(id, patch) {
+    await db.units.update(id, { ...patch, updated_at: now() })
+  }
+
   async function deleteUnit(id) {
     await db.units.update(id, { deleted: true, updated_at: now() })
   }
@@ -121,7 +125,7 @@ export function createRepo(db, { now = () => new Date().toISOString(), uuid = ()
 
   return {
     db, listProducts, getProduct, saveProduct, createProduct, deleteProduct,
-    listUnits, listAllUnits, addUnit, saveUnit, deleteUnit,
+    listUnits, listAllUnits, addUnit, saveUnit, updateUnit, deleteUnit,
     seedPresets, listPresets, savePreset, savePhoto, getPhoto, deletePhoto, getMeta, setMeta,
   }
 }

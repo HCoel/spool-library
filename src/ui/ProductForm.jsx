@@ -16,7 +16,7 @@ function fromProduct(p, isEdit) {
   const { overrides = {}, ...fields } = p.fields
   return {
     libId: p.library,
-    name: isEdit ? p.name : '',
+    name: isEdit ? getLibrary(p.library).editableName(p) : '',
     brand: p.brand ?? '',
     notes: p.notes ?? '',
     photo_id: isEdit ? p.photo_id ?? null : null,

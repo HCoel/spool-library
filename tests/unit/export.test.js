@@ -86,6 +86,12 @@ describe('rejecting bad backups', () => {
     [JSON.stringify({ format_version: 1, products: [], units: [], presets: [] }), /missing "photos"/],
     [JSON.stringify({ format_version: 1, products: [{ name: 'x' }], units: [], presets: [], photos: [] }), /Bad record in "products"/],
     [JSON.stringify({ format_version: 1, products: [], units: [], presets: [], photos: [{ id: 'p', updated_at: 'x', data: 42 }] }), /Bad record in "photos"/],
+    [JSON.stringify({ format_version: 1, products: [{ id: 'x', updated_at: '2030-01-01T00:00:00.000Z', library: 'filament', name: 'x' }], units: [], presets: [], photos: [] }), /Bad record in "products" \(#1\)/],
+    [JSON.stringify({ format_version: 1, products: [{ id: 'x', updated_at: 'soon', library: 'filament', name: 'x', fields: { material: 'PLA' } }], units: [], presets: [], photos: [] }), /Bad record in "products"/],
+    [JSON.stringify({ format_version: 1, products: [], units: [{ id: 'u', updated_at: '2030-01-01T00:00:00.000Z', created_at: '2030-01-01T00:00:00.000Z', amount_mode: 'level' }], presets: [], photos: [] }), /Bad record in "units"/],
+    [JSON.stringify({ format_version: 1, products: [], units: [{ id: 'u', updated_at: '2030-01-01T00:00:00.000Z', created_at: '2030-01-01T00:00:00.000Z', product_id: 'x', amount_mode: 'bogus' }], presets: [], photos: [] }), /Bad record in "units"/],
+    [JSON.stringify({ format_version: 1, products: [], units: [], presets: [{ id: 'p', updated_at: '2030-01-01T00:00:00.000Z' }], photos: [] }), /Bad record in "presets"/],
+    [JSON.stringify({ format_version: 1, products: [], units: [], presets: [], photos: [{ id: 'p', updated_at: '2030-01-01T00:00:00.000Z', data: 'AA==' }] }), /Bad record in "photos"/],
   ])('%s', (text, message) => {
     expect(() => parseImport(text)).toThrow(ImportError)
     expect(() => parseImport(text)).toThrow(message)

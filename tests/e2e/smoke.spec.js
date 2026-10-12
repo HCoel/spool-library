@@ -30,6 +30,14 @@ test('add, weigh, archive, filter and export', async ({ page }) => {
   await scale.press('Enter')
   await expect(page.getByText('600 g left')).toBeVisible()
 
+  // Location then a level tap must not undo each other
+  await page.getByLabel('Location').fill('Box A')
+  await page.getByRole('button', { name: '1/2', exact: true }).click()
+  await page.getByRole('button', { name: 'Done' }).click()
+  await page.getByRole('button', { name: 'Spool #1' }).click()
+  await expect(page.getByLabel('Location')).toHaveValue('Box A')
+  await expect(page.getByRole('button', { name: '1/2', exact: true })).toHaveAttribute('aria-pressed', 'true')
+
   // Archive it
   await page.getByRole('button', { name: 'Archive', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Show archived (1)' })).toBeVisible()
@@ -37,6 +45,8 @@ test('add, weigh, archive, filter and export', async ({ page }) => {
   // Filter on the grid
   await page.getByRole('link', { name: 'Back' }).click()
   const tile = page.getByRole('link', { name: 'Bambu PETG Jade White' })
+  await expect(tile).toHaveCount(0)
+  await page.getByRole('button', { name: 'Show archived', exact: true }).click()
   await expect(tile).toBeVisible()
   const material = page.getByRole('group', { name: 'Material' })
   await material.getByRole('button', { name: 'PLA', exact: true }).click()

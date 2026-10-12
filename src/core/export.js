@@ -3,6 +3,18 @@ export const FORMAT_VERSION = 1
 
 export class ImportError extends Error {}
 
+const ISO_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/
+const isStr = v => typeof v === 'string'
+const isObj = v => v !== null && typeof v === 'object' && !Array.isArray(v)
+
+// Fields the app reads without guarding; a record missing them would crash the UI after import
+const RECORD_CHECKS = {
+  products: r => isStr(r.library) && isStr(r.name) && isObj(r.fields) && isStr(r.fields.material),
+  units: r => isStr(r.product_id) && ['level', 'weight', 'count'].includes(r.amount_mode) && ISO_RE.test(r.created_at ?? ''),
+  presets: r => isStr(r.library) && isStr(r.material),
+  photos: r => isStr(r.type),
+}
+
 export function bufToBase64(buf) {
   const bytes = new Uint8Array(buf)
   let s = ''
@@ -39,9 +51,10 @@ export function parseImport(text) {
   if (data?.format_version !== FORMAT_VERSION) throw new ImportError(`Unsupported backup version: ${data?.format_version}`)
   for (const t of TABLES) {
     if (!Array.isArray(data[t])) throw new ImportError(`Backup is missing "${t}"`)
-    for (const r of data[t]) {
-      if (typeof r?.id !== 'string' || typeof r?.updated_at !== 'string') throw new ImportError(`Bad record in "${t}"`)
-    }
+    data[t].forEach((r, i) => {
+      const ok = isObj(r) && isStr(r.id) && ISO_RE.test(r.updated_at ?? '') && RECORD_CHECKS[t](r)
+      if (!ok) throw new ImportError(`Bad record in "${t}" (#${i + 1})`)
+    })
   }
   const photos = data.photos.map(p => {
     if (typeof p.data !== 'string') throw new ImportError('Bad record in "photos"')

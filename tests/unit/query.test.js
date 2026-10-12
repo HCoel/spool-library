@@ -30,7 +30,7 @@ describe('groupUnits', () => {
 describe('search', () => {
   test('matches name, brand, colour name and notes', () => {
     expect(queryProducts(products, units, lib, { search: 'jade' }).map(r => r.product.id)).toEqual(['2'])
-    expect(queryProducts(products, units, lib, { search: 'elegoo' }).map(r => r.product.id)).toEqual(['3'])
+    expect(queryProducts(products, units, lib, { search: 'elegoo', showArchived: true }).map(r => r.product.id)).toEqual(['3'])
   })
   // Review focus 4: regex characters, case and padding
   test('treats input as plain text', () => {
@@ -43,7 +43,7 @@ describe('search', () => {
 
 describe('filters', () => {
   test('OR within a facet, AND across facets', () => {
-    const ids = f => queryProducts(products, units, lib, { filters: f }).map(r => r.product.id).sort()
+    const ids = f => queryProducts(products, units, lib, { filters: f, showArchived: true }).map(r => r.product.id).sort()
     expect(ids({ material: ['PLA'] })).toEqual(['1', '3'])
     expect(ids({ material: ['PLA', 'PETG'] })).toEqual(['1', '2', '3'])
     expect(ids({ material: ['PLA'], finish: ['silk'] })).toEqual(['3'])
@@ -57,15 +57,23 @@ describe('rows and sorting', () => {
     const rows = queryProducts(products, units, lib, {})
     const byId = Object.fromEntries(rows.map(r => [r.product.id, r]))
     expect(byId['2']).toMatchObject({ activeCount: 2, remaining: 2000 })
-    expect(byId['3'].units).toEqual([])
+    expect(byId['1'].units.map(u => u.id)).toEqual(['a'])
     expect(queryProducts(products, units, lib, { showArchived: true }).find(r => r.product.id === '3').units).toHaveLength(1)
+  })
+  test('products with no active units are hidden unless showArchived', () => {
+    expect(queryProducts(products, units, lib, {}).map(r => r.product.id)).not.toContain('3')
+    expect(queryProducts(products, units, lib, { showArchived: true }).map(r => r.product.id)).toContain('3')
+  })
+  test('a product with no spools at all (all deleted) stays visible', () => {
+    const none = prod('4', 'Zero', {})
+    expect(queryProducts([none], units, lib, {}).map(r => r.product.id)).toEqual(['4'])
   })
   test('name sort puts products with no active units last', () => {
     // "Bambu PETG..." sorts before "Bambu PLA..."; Elegoo has no active spools so goes last
-    expect(queryProducts(products, units, lib, { sort: 'name' }).map(r => r.product.id)).toEqual(['2', '1', '3'])
+    expect(queryProducts(products, units, lib, { sort: 'name', showArchived: true }).map(r => r.product.id)).toEqual(['2', '1', '3'])
   })
   test('remaining sort is ascending', () => {
-    expect(queryProducts(products, units, lib, { sort: 'remaining' }).map(r => r.product.id)).toEqual(['1', '2', '3'])
+    expect(queryProducts(products, units, lib, { sort: 'remaining', showArchived: true }).map(r => r.product.id)).toEqual(['1', '2', '3'])
   })
   test('updated sort is newest first', () => {
     expect(queryProducts(products.slice(0, 2), units, lib, { sort: 'updated' }).map(r => r.product.id)).toEqual(['2', '1'])

@@ -67,6 +67,16 @@ describe('units', () => {
   })
 })
 
+test('updateUnit merges a patch without clobbering other fields', async () => {
+  const p = await repo.createProduct(base)
+  const [u] = await repo.listUnits(p.id)
+  await repo.updateUnit(u.id, { location: 'Box A' })
+  await repo.updateUnit(u.id, { amount_mode: 'level', level: 0.5, gross_g: null })
+  const [after] = await repo.listUnits(p.id)
+  expect(after).toMatchObject({ location: 'Box A', amount_mode: 'level', level: 0.5, product_id: p.id })
+  expect(after.updated_at > u.updated_at).toBe(true)
+})
+
 describe('presets', () => {
   test('seedPresets adds missing materials without overwriting edits', async () => {
     await repo.seedPresets('filament', { PLA: { nozzle_min: 190 }, PETG: { nozzle_min: 230 } })

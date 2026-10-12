@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import {
-  FINISHES, MATERIALS, capOf, defaultName, facets, formatPresetLine, formatRange,
+  FINISHES, MATERIALS, capOf, defaultName, editableName, facets, formatPresetLine, formatRange,
   newFields, presets, summary, validate, validateSettings,
 } from '../../src/libraries/filament/definition.js'
 
@@ -33,6 +33,15 @@ describe('defaultName', () => {
   })
 })
 
+describe('editableName', () => {
+  test('auto-derived names come back blank so they keep tracking edits', () => {
+    expect(editableName(product({ material: 'PETG', color_name: 'Jade' }, { name: 'Bambu PETG Jade' }))).toBe('')
+  })
+  test('custom names are kept', () => {
+    expect(editableName(product({}, { name: 'My spool' }))).toBe('My spool')
+  })
+})
+
 describe('validate', () => {
   test('defaults are valid', () => {
     expect(validate(product(), presets.PLA)).toEqual({})
@@ -46,6 +55,9 @@ describe('validate', () => {
     expect(validate(product({ finish: 'multi', color_hex_2: null }), presets.PLA).color_hex_2).toMatch(/second colour/)
     expect(validate(product({ finish: 'multi', color_hex_2: '#12' }), presets.PLA).color_hex_2).toMatch(/second colour/)
     expect(validate(product({ finish: 'multi', color_hex_2: '#123456', color_hex_3: 'zzz' }), presets.PLA)).toEqual({ color_hex_3: 'Use #RRGGBB' })
+  })
+  test('hidden extra colours are ignored unless the finish is multi', () => {
+    expect(validate(product({ finish: 'basic', color_hex_2: '#12', color_hex_3: 'zz' }), presets.PLA)).toEqual({})
   })
   test('override that pushes nozzle min above preset max is an error', () => {
     expect(validate(product({ overrides: { nozzle_min: 240 } }), presets.PLA).nozzle_max).toBe('Max must be at least min')

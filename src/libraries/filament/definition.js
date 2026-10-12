@@ -56,6 +56,11 @@ export function defaultName(product) {
     .join(' ')
 }
 
+// A stored name equal to the derived one was auto-generated: edit it as blank so it keeps tracking changes
+export function editableName(product) {
+  return product.name === defaultName(product) ? '' : product.name
+}
+
 export function capOf(product) {
   return { net_g: product.fields.net_g, empty_spool_g: product.fields.empty_spool_g }
 }
@@ -92,9 +97,11 @@ export function validate(product, preset = {}) {
   if (!MATERIALS.includes(f.material)) e.material = 'Pick a material'
   if (!FINISHES.includes(f.finish)) e.finish = 'Pick a finish'
   if (!isHex(f.color_hex)) e.color_hex = 'Use #RRGGBB'
-  if (f.finish === 'multi' && !isHex(f.color_hex_2)) e.color_hex_2 = 'Multi needs a second colour (#RRGGBB)'
-  else if (f.color_hex_2 != null && !isHex(f.color_hex_2)) e.color_hex_2 = 'Use #RRGGBB'
-  if (f.color_hex_3 != null && !isHex(f.color_hex_3)) e.color_hex_3 = 'Use #RRGGBB'
+  // Extra colours are only shown (and only matter) for the multi finish
+  if (f.finish === 'multi') {
+    if (!isHex(f.color_hex_2)) e.color_hex_2 = 'Multi needs a second colour (#RRGGBB)'
+    if (f.color_hex_3 != null && !isHex(f.color_hex_3)) e.color_hex_3 = 'Use #RRGGBB'
+  }
   checkRange(e, 'diameter', f.diameter, 0.5, 5, { required: true })
   checkRange(e, 'net_g', f.net_g, 1, 5000, { required: true })
   checkRange(e, 'empty_spool_g', f.empty_spool_g, 1, 5000, { required: true })

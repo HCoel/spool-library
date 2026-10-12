@@ -42,10 +42,12 @@ export function queryProducts(products, unitsByProduct, lib, { search = '', filt
         product,
         units: showArchived ? all : active,
         activeCount: active.length,
+        archivedOnly: active.length === 0 && all.length > 0,
         remaining: productRemaining(all, lib.capOf(product)),
         latest,
       }
     })
+    .filter(r => showArchived || !r.archivedOnly)
   const cmp = COMPARATORS[sort] ?? byName
   return rows.sort((a, b) => (a.activeCount === 0) - (b.activeCount === 0) || cmp(a, b))
 }
