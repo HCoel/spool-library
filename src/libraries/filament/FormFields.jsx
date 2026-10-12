@@ -66,14 +66,9 @@ export default function FormFields({ fields, overrides, preset, errors, onFields
           {err('diameter')}
         </div>
         <div>
-          <label for="net_g">Net (g)</label>
+          <label for="net_g">Filament weight (g)</label>
           <input id="net_g" type="number" inputmode="numeric" value={f.net_g ?? ''} onInput={number('net_g')} />
           {err('net_g')}
-        </div>
-        <div>
-          <label for="empty_spool_g">Empty spool (g)</label>
-          <input id="empty_spool_g" type="number" inputmode="numeric" value={f.empty_spool_g ?? ''} onInput={number('empty_spool_g')} />
-          {err('empty_spool_g')}
         </div>
       </div>
       <h3>Print settings <span class="muted">blank = {f.material} preset</span></h3>

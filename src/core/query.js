@@ -28,7 +28,22 @@ const byName = (a, b) => a.product.name.localeCompare(b.product.name)
 const COMPARATORS = {
   name: byName,
   remaining: (a, b) => a.remaining - b.remaining || byName(a, b),
-  updated: (a, b) => b.latest.localeCompare(a.latest) || byName(a, b),
+}
+
+// Numbers ascending; strings A-Z with blanks last
+function compareValues(a, b) {
+  if (typeof a === 'number' && typeof b === 'number') return a - b
+  if (a === b) return 0
+  if (a === '') return 1
+  if (b === '') return -1
+  return String(a).localeCompare(String(b))
+}
+
+function comparatorFor(lib, sort) {
+  if (COMPARATORS[sort]) return COMPARATORS[sort]
+  const s = lib.sorts?.find(x => x.key === sort)
+  if (!s) return byName
+  return (a, b) => compareValues(s.get(a.product), s.get(b.product)) || byName(a, b)
 }
 
 export function queryProducts(products, unitsByProduct, lib, { search = '', filters = {}, sort = 'name', showArchived = false } = {}) {
@@ -37,17 +52,15 @@ export function queryProducts(products, unitsByProduct, lib, { search = '', filt
     .map(product => {
       const all = unitsByProduct.get(product.id) ?? []
       const active = all.filter(isActive)
-      const latest = [product.updated_at, ...all.map(u => u.updated_at)].sort().at(-1)
       return {
         product,
         units: showArchived ? all : active,
         activeCount: active.length,
         archivedOnly: active.length === 0 && all.length > 0,
         remaining: productRemaining(all, lib.capOf(product)),
-        latest,
       }
     })
     .filter(r => showArchived || !r.archivedOnly)
-  const cmp = COMPARATORS[sort] ?? byName
+  const cmp = comparatorFor(lib, sort)
   return rows.sort((a, b) => (a.activeCount === 0) - (b.activeCount === 0) || cmp(a, b))
 }

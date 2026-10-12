@@ -19,8 +19,8 @@ export default function Filters({ lib, value, onChange }) {
       <div class="row">
         <select aria-label="Sort" value={value.sort} onChange={e => set({ sort: e.currentTarget.value })}>
           <option value="name">Name</option>
+          {(lib.sorts ?? []).map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
           <option value="remaining">Least remaining</option>
-          <option value="updated">Recently updated</option>
         </select>
         <button type="button" aria-pressed={value.showArchived} onClick={() => set({ showArchived: !value.showArchived })}>Show archived</button>
       </div>

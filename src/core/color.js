@@ -38,3 +38,13 @@ export function colorFamily(hex) {
   if (h < 260) return 'blue'
   return 'purple'
 }
+
+// Rainbow order (red to purple by hue), then neutrals dark to light; invalid colours last
+export function colorSortKey(hex) {
+  if (!isHex(hex)) return 9999
+  const family = colorFamily(hex)
+  const { h, l } = hexToHsl(hex)
+  if (family === 'neutral') return 7000 + l
+  // Shift hue so reds just below 360 sort with the reds at the start
+  return COLOR_FAMILIES.indexOf(family) * 1000 + ((h + 15) % 360)
+}

@@ -25,10 +25,10 @@ test('add, weigh, archive, filter and export', async ({ page }) => {
 
   // Weigh the spool
   await page.getByRole('button', { name: 'Spool #1' }).click()
-  const scale = page.getByLabel('Scale reading (g)')
+  const scale = page.getByLabel('Filament on scale (g)')
   await scale.fill('850')
   await scale.press('Enter')
-  await expect(page.getByText('600 g left')).toBeVisible()
+  await expect(page.getByText('850 g left')).toBeVisible()
 
   // Location then a level tap must not undo each other
   await page.getByLabel('Location').fill('Box A')

@@ -47,7 +47,7 @@ describe('filters', () => {
     expect(ids({ material: ['PLA'] })).toEqual(['1', '3'])
     expect(ids({ material: ['PLA', 'PETG'] })).toEqual(['1', '2', '3'])
     expect(ids({ material: ['PLA'], finish: ['silk'] })).toEqual(['3'])
-    expect(ids({ color: ['blue'] })).toEqual(['3'])
+    expect(ids({ finish: ['matte'] })).toEqual(['1'])
     expect(ids({ material: [] })).toEqual(['1', '2', '3'])
   })
 })
@@ -75,7 +75,29 @@ describe('rows and sorting', () => {
   test('remaining sort is ascending', () => {
     expect(queryProducts(products, units, lib, { sort: 'remaining', showArchived: true }).map(r => r.product.id)).toEqual(['1', '2', '3'])
   })
-  test('updated sort is newest first', () => {
-    expect(queryProducts(products.slice(0, 2), units, lib, { sort: 'updated' }).map(r => r.product.id)).toEqual(['2', '1'])
+  const sortIds = sort => queryProducts(products, units, lib, { sort, showArchived: true }).map(r => r.product.id)
+  test('type sort follows the material list (PLA first), unlike name order', () => {
+    // name order would be 2 (PETG) then 1 (PLA); Elegoo PLA (3) last because it has no active spools
+    expect(sortIds('type')).toEqual(['1', '2', '3'])
+  })
+  test('brand sort', () => {
+    const extra = prod('4', 'Zed', {}, { brand: 'Anycubic' })
+    const blank = prod('5', 'Aaa', {}, { brand: '' })
+    const u = groupUnits([unit('x', '4'), unit('y', '5')])
+    expect(queryProducts([products[0], extra, blank], new Map([...units, ...u]), lib, { sort: 'brand' }).map(r => r.product.id)).toEqual(['4', '1', '5'])
+  })
+  test('colour sort follows the rainbow', () => {
+    const red = prod('6', 'Red', { color_hex: '#E63946' })
+    const u = groupUnits([unit('z', '6')])
+    expect(queryProducts([products[0], products[1], red], new Map([...units, ...u]), lib, { sort: 'colour' }).map(r => r.product.id)).toEqual(['6', '1', '2'])
+  })
+  test('finish sort follows the finish list order, unlike name order', () => {
+    const wood = prod('7', 'Aaa Wood', { finish: 'wood' })
+    const u = groupUnits([unit('w', '7')])
+    // name order would put "Aaa Wood" first; finish order is basic (2), matte (1), wood (7)
+    expect(queryProducts([products[0], products[1], wood], new Map([...units, ...u]), lib, { sort: 'finish' }).map(r => r.product.id)).toEqual(['2', '1', '7'])
+  })
+  test('unknown sort falls back to name', () => {
+    expect(sortIds('updated')).toEqual(['2', '1', '3'])
   })
 })

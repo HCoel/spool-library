@@ -1,4 +1,4 @@
-import { COLOR_FAMILIES, colorFamily, isHex } from '../../core/color.js'
+import { colorSortKey, isHex } from '../../core/color.js'
 import { formatGrams, isActive, isEstimate, productRemaining } from '../../core/amount.js'
 import { effectiveSettings } from '../../core/presets.js'
 import { checkOrder, checkRange } from '../../core/validate.js'
@@ -44,7 +44,6 @@ export function newFields() {
     finish: 'basic',
     diameter: 1.75,
     net_g: 1000,
-    empty_spool_g: 250,
     overrides: {},
   }
 }
@@ -61,8 +60,9 @@ export function editableName(product) {
   return product.name === defaultName(product) ? '' : product.name
 }
 
+// Scale readings are filament only (tare the empty spool), so nothing is subtracted
 export function capOf(product) {
-  return { net_g: product.fields.net_g, empty_spool_g: product.fields.empty_spool_g }
+  return { net_g: product.fields.net_g, empty_spool_g: 0 }
 }
 
 export function formatRange(min, max, unit) {
@@ -104,15 +104,21 @@ export function validate(product, preset = {}) {
   }
   checkRange(e, 'diameter', f.diameter, 0.5, 5, { required: true })
   checkRange(e, 'net_g', f.net_g, 1, 5000, { required: true })
-  checkRange(e, 'empty_spool_g', f.empty_spool_g, 1, 5000, { required: true })
   Object.assign(e, validateSettings(effectiveSettings(SETTING_KEYS, preset, f.overrides).values))
   return e
 }
 
+// Quick-filter chips on the grid: a short list, not every material and finish
 export const facets = [
-  { key: 'material', label: 'Material', options: MATERIALS, get: p => p.fields.material },
-  { key: 'finish', label: 'Finish', options: FINISHES, get: p => p.fields.finish },
-  { key: 'color', label: 'Colour', options: COLOR_FAMILIES, get: p => colorFamily(p.fields.color_hex) },
+  { key: 'material', label: 'Material', options: ['PLA', 'PETG'], get: p => p.fields.material },
+  { key: 'finish', label: 'Finish', options: ['basic', 'matte', 'translucent', 'multi', 'wood'], get: p => p.fields.finish },
+]
+
+export const sorts = [
+  { key: 'type', label: 'Type', get: p => MATERIALS.indexOf(p.fields.material) },
+  { key: 'brand', label: 'Brand', get: p => (p.brand ?? '').trim().toLowerCase() },
+  { key: 'colour', label: 'Colour', get: p => colorSortKey(p.fields.color_hex) },
+  { key: 'finish', label: 'Finish', get: p => FINISHES.indexOf(p.fields.finish) },
 ]
 
 export function summary(product, units) {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import {
-  FINISHES, MATERIALS, capOf, defaultName, editableName, facets, formatPresetLine, formatRange,
+  FINISHES, MATERIALS, capOf, defaultName, editableName, facets, sorts, formatPresetLine, formatRange,
   newFields, presets, summary, validate, validateSettings,
 } from '../../src/libraries/filament/definition.js'
 
@@ -47,8 +47,9 @@ describe('validate', () => {
     expect(validate(product(), presets.PLA)).toEqual({})
   })
   test('bad hex, material, finish and weights', () => {
-    const e = validate(product({ color_hex: 'red', material: 'Cheese', finish: 'shiny', net_g: 0, empty_spool_g: null }), {})
-    expect(e).toMatchObject({ color_hex: 'Use #RRGGBB', material: 'Pick a material', finish: 'Pick a finish', net_g: 'Must be 1-5000', empty_spool_g: 'Required' })
+    const e = validate(product({ color_hex: 'red', material: 'Cheese', finish: 'shiny', net_g: 0 }), {})
+    expect(e).toEqual({ color_hex: 'Use #RRGGBB', material: 'Pick a material', finish: 'Pick a finish', net_g: 'Must be 1-5000' })
+    expect(validate(product({ net_g: null }), {}).net_g).toBe('Required')
   })
   // Review focus 5: multi finish without a valid second colour
   test('multi finish needs a valid second colour', () => {
@@ -90,16 +91,27 @@ describe('formatting', () => {
 })
 
 describe('facets and summary', () => {
-  test('facets read material, finish and colour family', () => {
-    const p = product({ material: 'PETG', finish: 'silk', color_hex: '#1E90FF' })
-    expect(Object.fromEntries(facets.map(f => [f.key, f.get(p)]))).toEqual({ material: 'PETG', finish: 'silk', color: 'blue' })
+  test('quick-filter chips are the short list', () => {
+    expect(facets.map(f => [f.key, f.options])).toEqual([
+      ['material', ['PLA', 'PETG']],
+      ['finish', ['basic', 'matte', 'translucent', 'multi', 'wood']],
+    ])
+    const p = product({ material: 'PETG', finish: 'silk' })
+    expect(facets.map(f => f.get(p))).toEqual(['PETG', 'silk'])
+  })
+  test('sort options are type, brand, colour, finish', () => {
+    expect(sorts.map(s => [s.key, s.label])).toEqual([['type', 'Type'], ['brand', 'Brand'], ['colour', 'Colour'], ['finish', 'Finish']])
   })
   test('summary counts active spools and marks estimates', () => {
     const p = product()
     const units = [{ amount_mode: 'level', level: 1 }, { amount_mode: 'level', level: 0.5 }, { amount_mode: 'level', level: 1, archived: true }]
     expect(summary(p, units)).toBe('PLA · ×2 · ~1.5 kg')
   })
-  test('capOf', () => {
-    expect(capOf(product({ net_g: 500, empty_spool_g: 180 }))).toEqual({ net_g: 500, empty_spool_g: 180 })
+  test('capOf: scale readings are filament only, so no spool weight is subtracted', () => {
+    expect(capOf(product({ net_g: 500 }))).toEqual({ net_g: 500, empty_spool_g: 0 })
+    expect(capOf(product({ net_g: 500, empty_spool_g: 250 }))).toEqual({ net_g: 500, empty_spool_g: 0 })
+  })
+  test('new products have no empty spool field', () => {
+    expect(newFields()).not.toHaveProperty('empty_spool_g')
   })
 })

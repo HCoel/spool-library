@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { colorFamily, hexToHsl, isHex } from '../../src/core/color.js'
+import { colorFamily, colorSortKey, hexToHsl, isHex } from '../../src/core/color.js'
 
 describe('isHex', () => {
   test.each(['#E63946', '#ffffff', '#000000'])('accepts %s', v => expect(isHex(v)).toBe(true))
@@ -26,4 +26,15 @@ describe('colorFamily', () => {
     ['#808080', 'neutral'],
     ['not-a-hex', 'neutral'],
   ])('%s -> %s', (hex, family) => expect(colorFamily(hex)).toBe(family))
+})
+
+describe('colorSortKey', () => {
+  test('orders as a rainbow, then neutrals dark to light', () => {
+    const hexes = ['#FFFFFF', '#1E90FF', '#000000', '#E63946', '#808080', '#FFD700', '#8A2BE2', '#2E8B57', '#FF8C00']
+    const sorted = [...hexes].sort((a, b) => colorSortKey(a) - colorSortKey(b))
+    expect(sorted).toEqual(['#E63946', '#FF8C00', '#FFD700', '#2E8B57', '#1E90FF', '#8A2BE2', '#000000', '#808080', '#FFFFFF'])
+  })
+  test('invalid hex sorts last', () => {
+    expect(colorSortKey('nope')).toBeGreaterThan(colorSortKey('#FFFFFF'))
+  })
 })

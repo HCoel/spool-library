@@ -59,7 +59,7 @@ export default function UnitSheet({ lib, cap, unit, n, onClose }) {
               onClick={() => { setWeightText(''); patch({ amount_mode: 'level', level: l.value, gross_g: null }) }}>{l.label}</button>
           ))}
         </div>
-        <label for="gross">Scale reading (g)</label>
+        <label for="gross">Filament on scale (g)</label>
         <input id="gross" type="number" inputmode="numeric" value={weight}
           onInput={e => setWeightText(e.currentTarget.value)}
           onBlur={commitWeight}
@@ -68,7 +68,7 @@ export default function UnitSheet({ lib, cap, unit, n, onClose }) {
         {preview !== null && (
           <p>
             → {formatGrams(preview)} left
-            {grams < cap.empty_spool_g && <span class="error"> - below the empty spool weight ({cap.empty_spool_g} g), check it</span>}
+            <span class="muted"> (tare the empty spool first)</span>
           </p>
         )}
         <label for="location">Location</label>

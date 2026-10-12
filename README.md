@@ -10,6 +10,10 @@ Live app: https://hcoel.github.io/spool-library/
 2. Tap Share, then **Add to Home Screen**.
 3. Open Spool Library from the home screen (not the Safari tab: they keep separate data).
 
+## Weighing a spool
+
+Put the empty spool on the scale and press tare first, then weigh. The app takes the reading as filament only.
+
 ## Backups
 
 Settings > Export backup, then Save to Files > iCloud Drive. Removing the app from the home screen deletes its data. The gear icon shows a red dot after 14 days without a backup.
