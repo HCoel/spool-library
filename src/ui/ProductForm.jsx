@@ -46,10 +46,9 @@ export default function ProductForm({ lib: defaultLib, editId, duplicateFrom }) 
   const presets = useLive(() => repo.listPresets(libId), [libId], {})
 
   useEffect(() => {
-    if (!sourceId) {
-      setState(blankState(defaultLib))
-      return
-    }
+    // New product: useState already seeded blank state and App keys this form by route,
+    // so resetting here would only wipe anything typed before the effect runs.
+    if (!sourceId) return
     repo.getProduct(sourceId).then(p => (p ? setState(fromProduct(p, Boolean(editId))) : setMissing(true)))
   }, [sourceId])
 
