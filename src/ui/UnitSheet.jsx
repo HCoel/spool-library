@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks'
-import { LEVELS, formatGrams, unitLevel, unitRemaining } from '../core/amount.js'
+import { LEVELS, unitLevel } from '../core/amount.js'
 import { repo } from '../store.js'
 import { guard } from './toast.jsx'
 
@@ -14,7 +14,6 @@ export default function UnitSheet({ lib, cap, unit, n, onClose }) {
   const patch = fields => guard(() => repo.updateUnit(unit.id, fields))
   const grams = weight === '' ? null : Number(weight)
   const weightError = grams !== null && (!Number.isFinite(grams) || grams < 0) ? 'Enter 0 or more' : null
-  const preview = grams !== null && !weightError ? unitRemaining({ amount_mode: 'weight', gross_g: grams }, cap) : null
 
   const commitWeight = () => {
     if (grams === null || weightError || grams === unit.gross_g) return
@@ -53,24 +52,26 @@ export default function UnitSheet({ lib, cap, unit, n, onClose }) {
           <h2 style="flex:1;margin:0">{label}</h2>
           <button onClick={close}>Done</button>
         </header>
+        <label for="gross">Grams left</label>
+        <div class="row" style="align-items:center;margin:0">
+          <input id="gross" type="number" inputmode="numeric" value={weight}
+            onInput={e => setWeightText(e.currentTarget.value)}
+            onBlur={commitWeight}
+            onKeyDown={e => e.key === 'Enter' && commitWeight()} />
+          <span class="muted" style="flex:0 0 auto">of {cap.net_g} g</span>
+        </div>
+        <div class="muted">Read it off the gram markings on the spool.</div>
+        {weightError && <div class="error">{weightError}</div>}
+        {grams !== null && !weightError && grams > cap.net_g && (
+          <div class="error">More than the spool size ({cap.net_g} g). Check the spool size on this filament.</div>
+        )}
+        <label>Or estimate</label>
         <div class="chips" role="group" aria-label="Level">
           {LEVELS.map(l => (
             <button key={l.value} aria-pressed={unit.amount_mode === 'level' && unit.level === l.value}
               onClick={() => { setWeightText(''); patch({ amount_mode: 'level', level: l.value, gross_g: null }) }}>{l.label}</button>
           ))}
         </div>
-        <label for="gross">Filament on scale (g)</label>
-        <input id="gross" type="number" inputmode="numeric" value={weight}
-          onInput={e => setWeightText(e.currentTarget.value)}
-          onBlur={commitWeight}
-          onKeyDown={e => e.key === 'Enter' && commitWeight()} />
-        {weightError && <div class="error">{weightError}</div>}
-        {preview !== null && (
-          <p>
-            → {formatGrams(preview)} left
-            <span class="muted"> (tare the empty spool first)</span>
-          </p>
-        )}
         <label for="location">Location</label>
         <input id="location" value={location} onInput={e => setLocation(e.currentTarget.value)}
           onBlur={commitLocation} />

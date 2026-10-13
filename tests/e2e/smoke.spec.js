@@ -17,18 +17,27 @@ test('add, weigh, archive, filter and export', async ({ page }) => {
   await page.getByRole('link', { name: 'Add filament' }).click()
   await page.getByLabel('Brand').fill('Bambu')
   await page.getByLabel('Material').selectOption('PETG')
-  await expect(page.getByLabel('Nozzle min')).toHaveAttribute('placeholder', '230')
+  // Preset values show as hints under empty boxes, not as look-alike values inside them
+  await expect(page.getByLabel('Nozzle min')).toHaveValue('')
+  await expect(page.getByText('PETG preset: 230', { exact: true })).toBeVisible()
+  // Spool size is a picker; 1 kg is the default, 500 g can be chosen
+  const sizes = page.getByRole('group', { name: 'Spool size' })
+  await expect(sizes.getByRole('button', { name: '1 kg' })).toHaveAttribute('aria-pressed', 'true')
+  await sizes.getByRole('button', { name: '500 g' }).click()
+  await expect(sizes.getByRole('button', { name: '500 g' })).toHaveAttribute('aria-pressed', 'true')
+  await sizes.getByRole('button', { name: '1 kg' }).click()
   await page.getByLabel('Colour name').fill('Jade White')
   await page.getByLabel('Hex', { exact: true }).fill('#F0F0E8')
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByRole('heading', { name: 'Bambu PETG Jade White' })).toBeVisible()
 
-  // Weigh the spool
+  // Enter grams left, read off the spool's markings
   await page.getByRole('button', { name: 'Spool #1' }).click()
-  const scale = page.getByLabel('Filament on scale (g)')
-  await scale.fill('850')
-  await scale.press('Enter')
-  await expect(page.getByText('850 g left')).toBeVisible()
+  await expect(page.getByText('of 1000 g')).toBeVisible()
+  const left = page.getByLabel('Grams left')
+  await left.fill('850')
+  await left.press('Enter')
+  await expect(page.getByRole('button', { name: 'Spool #1' })).toContainText('850 g')
 
   // Location then a level tap must not undo each other
   await page.getByLabel('Location').fill('Box A')

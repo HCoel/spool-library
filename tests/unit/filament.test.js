@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import {
-  FINISHES, MATERIALS, capOf, defaultName, editableName, facets, sorts, formatPresetLine, formatRange,
+  FINISHES, MATERIALS, SPOOL_SIZES, capOf, defaultName, editableName, facets, sorts, formatPresetLine, formatRange,
   newFields, presets, summary, validate, validateSettings,
 } from '../../src/libraries/filament/definition.js'
 
@@ -110,6 +110,10 @@ describe('facets and summary', () => {
   test('capOf: scale readings are filament only, so no spool weight is subtracted', () => {
     expect(capOf(product({ net_g: 500 }))).toEqual({ net_g: 500, empty_spool_g: 0 })
     expect(capOf(product({ net_g: 500, empty_spool_g: 250 }))).toEqual({ net_g: 500, empty_spool_g: 0 })
+  })
+  test('spool size picker offers 1 kg, 500 g and 250 g, with 1 kg the default', () => {
+    expect(SPOOL_SIZES).toEqual([{ grams: 1000, label: '1 kg' }, { grams: 500, label: '500 g' }, { grams: 250, label: '250 g' }])
+    expect(newFields().net_g).toBe(1000)
   })
   test('new products have no empty spool field', () => {
     expect(newFields()).not.toHaveProperty('empty_spool_g')

@@ -10,9 +10,9 @@ Live app: https://hcoel.github.io/spool-library/
 2. Tap Share, then **Add to Home Screen**.
 3. Open Spool Library from the home screen (not the Safari tab: they keep separate data).
 
-## Weighing a spool
+## Grams left
 
-Put the empty spool on the scale and press tare first, then weigh. The app takes the reading as filament only.
+Tap a spool and type the grams left, read off the gram markings on the spool (or weigh it with the empty spool tared). No markings? Use the Full / 3/4 / 1/2 / 1/4 / Low estimate instead.
 
 ## Backups
 

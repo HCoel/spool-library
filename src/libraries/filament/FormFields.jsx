@@ -1,5 +1,5 @@
 import { isHex } from '../../core/color.js'
-import { FINISHES, MATERIALS, SETTING_LABELS } from './definition.js'
+import { FINISHES, MATERIALS, SETTING_LABELS, SPOOL_SIZES } from './definition.js'
 
 const num = v => (v === '' || v == null ? null : Number(v))
 
@@ -26,8 +26,9 @@ export default function FormFields({ fields, overrides, preset, errors, onFields
   const setting = key => (
     <div>
       <label for={key}>{SETTING_LABELS[key]}</label>
-      <input id={key} type="number" inputmode="numeric" placeholder={preset[key] ?? '-'} value={overrides[key] ?? ''}
+      <input id={key} type="number" inputmode="numeric" value={overrides[key] ?? ''}
         onInput={e => onOverrides({ [key]: num(e.currentTarget.value) })} />
+      <div class="muted">{f.material} preset: {preset[key] ?? 'none'}</div>
       {err(key)}
     </div>
   )
@@ -59,19 +60,21 @@ export default function FormFields({ fields, overrides, preset, errors, onFields
           <ColorField id="color_hex_3" label="Hex 3 (optional)" value={f.color_hex_3} error={errors.color_hex_3} onChange={v => onFields({ color_hex_3: v })} />
         </>
       )}
-      <div class="row">
-        <div>
-          <label for="diameter">Diameter (mm)</label>
-          <input id="diameter" type="number" step="0.01" value={f.diameter ?? ''} onInput={number('diameter')} />
-          {err('diameter')}
-        </div>
-        <div>
-          <label for="net_g">Filament weight (g)</label>
-          <input id="net_g" type="number" inputmode="numeric" value={f.net_g ?? ''} onInput={number('net_g')} />
-          {err('net_g')}
-        </div>
+      <label id="spool-size-label">Spool size (when full)</label>
+      <div class="chips" role="group" aria-labelledby="spool-size-label" style="align-items:center">
+        {SPOOL_SIZES.map(s => (
+          <button type="button" key={s.grams} aria-pressed={f.net_g === s.grams} onClick={() => onFields({ net_g: s.grams })}>{s.label}</button>
+        ))}
+        <input id="net_g" type="number" inputmode="numeric" aria-label="Other spool size (g)" placeholder="Other (g)"
+          style="width:110px;flex:0 0 auto"
+          value={SPOOL_SIZES.some(s => s.grams === f.net_g) ? '' : f.net_g ?? ''} onInput={number('net_g')} />
       </div>
-      <h3>Print settings <span class="muted">blank = {f.material} preset</span></h3>
+      {err('net_g')}
+      <label for="diameter">Diameter (mm)</label>
+      <input id="diameter" type="number" step="0.01" value={f.diameter ?? ''} onInput={number('diameter')} />
+      {err('diameter')}
+      <h3>Print settings</h3>
+      <p class="muted" style="margin:0">Leave a box blank to use the {f.material} preset. Type a value to override it for this filament.</p>
       <div class="row">{setting('nozzle_min')}{setting('nozzle_max')}</div>
       <div class="row">{setting('bed_min')}{setting('bed_max')}</div>
       <div class="row">{setting('dry_temp')}{setting('dry_hours')}</div>

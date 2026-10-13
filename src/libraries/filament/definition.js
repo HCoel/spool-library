@@ -34,6 +34,12 @@ export const presets = {
 
 export const preset_key = 'material'
 
+export const SPOOL_SIZES = [
+  { grams: 1000, label: '1 kg' },
+  { grams: 500, label: '500 g' },
+  { grams: 250, label: '250 g' },
+]
+
 export function newFields() {
   return {
     material: 'PLA',
