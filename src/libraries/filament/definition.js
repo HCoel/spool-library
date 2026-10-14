@@ -19,12 +19,28 @@ export const SETTING_LABELS = {
 const s = (nozzle_min, nozzle_max, bed_min, bed_max, dry_temp, dry_hours, speed_max) =>
   ({ nozzle_min, nozzle_max, bed_min, bed_max, dry_temp, dry_hours, speed_max })
 
+// Sub-types per material. A category with `preset` prints differently and gets its own preset;
+// the others use the base material's preset. Add a category here to offer it in the form.
+export const CATEGORIES = {
+  PLA: [{ name: 'Pure' }, { name: 'PLA+', preset: 'PLA+' }, { name: 'Polylite' }],
+  PETG: [{ name: 'HF', preset: 'PETG HF' }],
+  TPU: [{ name: '95A HF', preset: 'TPU 95A HF' }],
+}
+
+const PLA = s(190, 230, 55, 60, 55, 8, null)
+const PETG = s(230, 260, 70, 80, 65, 8, null)
+const TPU = s(210, 240, 30, 35, 70, 8, null)
+
+// Category presets start as copies of their base and sit right after it (Settings lists them in this order)
 export const presets = {
-  PLA: s(190, 230, 55, 60, 55, 8, null),
-  PETG: s(230, 260, 70, 80, 65, 8, null),
+  PLA,
+  'PLA+': { ...PLA },
+  PETG,
+  'PETG HF': { ...PETG },
   ABS: s(240, 270, 90, 100, 80, 8, null),
   ASA: s(240, 270, 90, 100, 80, 8, null),
-  TPU: s(210, 240, 30, 35, 70, 8, null),
+  TPU,
+  'TPU 95A HF': { ...TPU },
   Nylon: s(260, 290, 80, 100, 80, 12, null),
   'PLA Wood': s(210, 235, 45, 60, null, null, 150),
   'PLA Support': s(220, 230, 35, 45, 55, 8, 200),
@@ -32,7 +48,20 @@ export const presets = {
   Other: s(null, null, null, null, null, null, null),
 }
 
-export const preset_key = 'material'
+function categoryOf(fields) {
+  return CATEGORIES[fields.material]?.find(c => c.name === fields.category)
+}
+
+export function presetKeyOf(fields) {
+  return categoryOf(fields)?.preset ?? fields.material
+}
+
+// "PLA+" already says PLA, so it stands alone; otherwise "PETG HF", "PLA Pure"
+export function typeLabel(fields) {
+  const { material, category } = fields
+  if (!category) return material
+  return category.startsWith(material) ? category : `${material} ${category}`
+}
 
 export const SPOOL_SIZES = [
   { grams: 1000, label: '1 kg' },
@@ -43,6 +72,7 @@ export const SPOOL_SIZES = [
 export function newFields() {
   return {
     material: 'PLA',
+    category: null,
     color_name: '',
     color_hex: '#888888',
     color_hex_2: null,
@@ -55,7 +85,7 @@ export function newFields() {
 }
 
 export function defaultName(product) {
-  return [product.brand, product.fields.material, product.fields.color_name]
+  return [product.brand, typeLabel(product.fields), product.fields.color_name]
     .map(v => (v ?? '').trim())
     .filter(Boolean)
     .join(' ')
@@ -101,6 +131,7 @@ export function validate(product, preset = {}) {
   const f = product.fields
   const e = {}
   if (!MATERIALS.includes(f.material)) e.material = 'Pick a material'
+  if (f.category && !categoryOf(f)) e.category = 'Pick a category'
   if (!FINISHES.includes(f.finish)) e.finish = 'Pick a finish'
   if (!isHex(f.color_hex)) e.color_hex = 'Use #RRGGBB'
   // Extra colours are only shown (and only matter) for the multi finish
@@ -121,7 +152,7 @@ export const facets = [
 ]
 
 export const sorts = [
-  { key: 'type', label: 'Type', get: p => MATERIALS.indexOf(p.fields.material) },
+  { key: 'type', label: 'Type', get: p => MATERIALS.indexOf(p.fields.material) * 100 + ((CATEGORIES[p.fields.material] ?? []).findIndex(c => c.name === p.fields.category) + 1) },
   { key: 'brand', label: 'Brand', get: p => (p.brand ?? '').trim().toLowerCase() },
   { key: 'colour', label: 'Colour', get: p => colorSortKey(p.fields.color_hex) },
   { key: 'finish', label: 'Finish', get: p => FINISHES.indexOf(p.fields.finish) },
@@ -130,5 +161,5 @@ export const sorts = [
 export function summary(product, units) {
   const active = units.filter(isActive)
   const grams = productRemaining(units, capOf(product))
-  return `${product.fields.material} · ×${active.length} · ${formatGrams(grams, active.some(isEstimate))}`
+  return `${typeLabel(product.fields)} · ×${active.length} · ${formatGrams(grams, active.some(isEstimate))}`
 }

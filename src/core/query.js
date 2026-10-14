@@ -13,7 +13,7 @@ export function groupUnits(units) {
 export function matchesSearch(product, search) {
   const q = (search ?? '').trim().toLowerCase()
   if (!q) return true
-  return [product.name, product.brand, product.fields?.color_name, product.notes]
+  return [product.name, product.brand, product.fields?.color_name, product.fields?.category, product.notes]
     .some(v => (v ?? '').toLowerCase().includes(q))
 }
 

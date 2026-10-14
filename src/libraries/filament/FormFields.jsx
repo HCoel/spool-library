@@ -1,5 +1,5 @@
 import { isHex } from '../../core/color.js'
-import { FINISHES, MATERIALS, SETTING_LABELS, SPOOL_SIZES } from './definition.js'
+import { CATEGORIES, FINISHES, MATERIALS, SETTING_LABELS, SPOOL_SIZES, presetKeyOf } from './definition.js'
 
 const num = v => (v === '' || v == null ? null : Number(v))
 
@@ -20,6 +20,8 @@ function ColorField({ id, label, value, onChange, error }) {
 
 export default function FormFields({ fields, overrides, preset, errors, onFields, onOverrides }) {
   const f = fields
+  const presetName = presetKeyOf(f)
+  const categories = CATEGORIES[f.material] ?? []
   const text = key => e => onFields({ [key]: e.currentTarget.value })
   const number = key => e => onFields({ [key]: num(e.currentTarget.value) })
   const err = key => errors[key] && <div class="error">{errors[key]}</div>
@@ -28,7 +30,7 @@ export default function FormFields({ fields, overrides, preset, errors, onFields
       <label for={key}>{SETTING_LABELS[key]}</label>
       <input id={key} type="number" inputmode="numeric" value={overrides[key] ?? ''}
         onInput={e => onOverrides({ [key]: num(e.currentTarget.value) })} />
-      <div class="muted">{f.material} preset: {preset[key] ?? 'none'}</div>
+      <div class="muted">{presetName} preset: {preset[key] ?? 'none'}</div>
       {err(key)}
     </div>
   )
@@ -38,7 +40,7 @@ export default function FormFields({ fields, overrides, preset, errors, onFields
       <div class="row">
         <div>
           <label for="material">Material</label>
-          <select id="material" value={f.material} onChange={text('material')}>
+          <select id="material" value={f.material} onChange={e => onFields({ material: e.currentTarget.value, category: null })}>
             {MATERIALS.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
           {err('material')}
@@ -51,6 +53,16 @@ export default function FormFields({ fields, overrides, preset, errors, onFields
           {err('finish')}
         </div>
       </div>
+      {categories.length > 0 && (
+        <>
+          <label for="category">Category</label>
+          <select id="category" value={f.category ?? ''} onChange={e => onFields({ category: e.currentTarget.value || null })}>
+            <option value="">None</option>
+            {categories.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+          </select>
+          {err('category')}
+        </>
+      )}
       <label for="color_name">Colour name</label>
       <input id="color_name" value={f.color_name} onInput={text('color_name')} />
       <ColorField id="color_hex" label="Hex" value={f.color_hex} error={errors.color_hex} onChange={v => onFields({ color_hex: v })} />
@@ -74,7 +86,7 @@ export default function FormFields({ fields, overrides, preset, errors, onFields
       <input id="diameter" type="number" step="0.01" value={f.diameter ?? ''} onInput={number('diameter')} />
       {err('diameter')}
       <h3>Print settings</h3>
-      <p class="muted" style="margin:0">Leave a box blank to use the {f.material} preset. Type a value to override it for this filament.</p>
+      <p class="muted" style="margin:0">Leave a box blank to use the {presetName} preset. Type a value to override it for this filament.</p>
       <div class="row">{setting('nozzle_min')}{setting('nozzle_max')}</div>
       <div class="row">{setting('bed_min')}{setting('bed_max')}</div>
       <div class="row">{setting('dry_temp')}{setting('dry_hours')}</div>

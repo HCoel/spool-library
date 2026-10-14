@@ -101,3 +101,8 @@ describe('rows and sorting', () => {
     expect(sortIds('updated')).toEqual(['2', '1', '3'])
   })
 })
+
+test('search matches the category even with a custom name', () => {
+  const hf = prod('8', 'My spool', { material: 'PETG', category: 'HF' })
+  expect(matchesSearch(hf, 'hf')).toBe(true)
+})

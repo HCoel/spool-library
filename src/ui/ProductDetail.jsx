@@ -21,7 +21,7 @@ export default function ProductDetail({ id }) {
 
   const lib = getLibrary(product.library)
   const cap = lib.capOf(product)
-  const preset = presets[product.fields[lib.preset_key]] ?? {}
+  const preset = presets[lib.presetKeyOf(product.fields)] ?? {}
   const numbered = [...units].sort((a, b) => a.created_at.localeCompare(b.created_at)).map((u, i) => ({ u, n: i + 1 }))
   const active = numbered.filter(x => !x.u.archived)
   const archived = numbered.filter(x => x.u.archived)

@@ -20,6 +20,8 @@ test('add, weigh, archive, filter and export', async ({ page }) => {
   // Preset values show as hints under empty boxes, not as look-alike values inside them
   await expect(page.getByLabel('Nozzle min')).toHaveValue('')
   await expect(page.getByText('PETG preset: 230', { exact: true })).toBeVisible()
+  await page.getByLabel('Category').selectOption('HF')
+  await expect(page.getByText('PETG HF preset: 230', { exact: true })).toBeVisible()
   // Spool size is a picker; 1 kg is the default, 500 g can be chosen
   const sizes = page.getByRole('group', { name: 'Spool size' })
   await expect(sizes.getByRole('button', { name: '1 kg' })).toHaveAttribute('aria-pressed', 'true')
@@ -29,7 +31,7 @@ test('add, weigh, archive, filter and export', async ({ page }) => {
   await page.getByLabel('Colour name').fill('Jade White')
   await page.getByLabel('Hex', { exact: true }).fill('#F0F0E8')
   await page.getByRole('button', { name: 'Save' }).click()
-  await expect(page.getByRole('heading', { name: 'Bambu PETG Jade White' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Bambu PETG HF Jade White' })).toBeVisible()
 
   // Enter grams left, read off the spool's markings
   await page.getByRole('button', { name: 'Spool #1' }).click()
@@ -53,7 +55,7 @@ test('add, weigh, archive, filter and export', async ({ page }) => {
 
   // Filter on the grid
   await page.getByRole('link', { name: 'Back' }).click()
-  const tile = page.getByRole('link', { name: 'Bambu PETG Jade White' })
+  const tile = page.getByRole('link', { name: 'Bambu PETG HF Jade White' })
   await expect(tile).toHaveCount(0)
   await page.getByRole('button', { name: 'Show archived', exact: true }).click()
   await expect(tile).toBeVisible()

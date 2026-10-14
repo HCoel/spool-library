@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import {
-  FINISHES, MATERIALS, SPOOL_SIZES, capOf, defaultName, editableName, facets, sorts, formatPresetLine, formatRange,
+  CATEGORIES, FINISHES, MATERIALS, SPOOL_SIZES, capOf, presetKeyOf, typeLabel, defaultName, editableName, facets, sorts, formatPresetLine, formatRange,
   newFields, presets, summary, validate, validateSettings,
 } from '../../src/libraries/filament/definition.js'
 
@@ -117,5 +117,62 @@ describe('facets and summary', () => {
   })
   test('new products have no empty spool field', () => {
     expect(newFields()).not.toHaveProperty('empty_spool_g')
+  })
+})
+
+describe('categories', () => {
+  test('category lists per material', () => {
+    expect(Object.fromEntries(Object.entries(CATEGORIES).map(([m, cs]) => [m, cs.map(c => c.name)]))).toEqual({
+      PLA: ['Pure', 'PLA+', 'Polylite'],
+      PETG: ['HF'],
+      TPU: ['95A HF'],
+    })
+  })
+  test.each([
+    ['PLA', null, 'PLA'],
+    ['PLA', 'Pure', 'PLA'],
+    ['PLA', 'Polylite', 'PLA'],
+    ['PLA', 'PLA+', 'PLA+'],
+    ['PETG', 'HF', 'PETG HF'],
+    ['PETG', null, 'PETG'],
+    ['TPU', '95A HF', 'TPU 95A HF'],
+  ])('%s + %s uses the %s preset', (material, category, key) => {
+    expect(presetKeyOf({ material, category })).toBe(key)
+  })
+  test('category presets start as copies of their base material and sit right after it', () => {
+    expect(presets['PLA+']).toEqual(presets.PLA)
+    expect(presets['PETG HF']).toEqual(presets.PETG)
+    expect(presets['TPU 95A HF']).toEqual(presets.TPU)
+    const keys = Object.keys(presets)
+    expect(keys.indexOf('PLA+')).toBe(keys.indexOf('PLA') + 1)
+    expect(keys.indexOf('PETG HF')).toBe(keys.indexOf('PETG') + 1)
+    expect(keys.indexOf('TPU 95A HF')).toBe(keys.indexOf('TPU') + 1)
+  })
+  test.each([
+    ['PLA', null, 'PLA'],
+    ['PLA', 'Pure', 'PLA Pure'],
+    ['PLA', 'PLA+', 'PLA+'],
+    ['PETG', 'HF', 'PETG HF'],
+    ['TPU', '95A HF', 'TPU 95A HF'],
+  ])('typeLabel %s + %s = %s', (material, category, label) => {
+    expect(typeLabel({ material, category })).toBe(label)
+  })
+  test('default name and summary include the category', () => {
+    const p = product({ material: 'PETG', category: 'HF', color_name: 'Jade White' })
+    expect(defaultName(p)).toBe('Bambu PETG HF Jade White')
+    expect(summary(p, [{ amount_mode: 'level', level: 1 }])).toBe('PETG HF · ×1 · ~1.0 kg')
+  })
+  test('category must belong to the material', () => {
+    expect(validate(product({ material: 'PLA', category: 'HF' }), presets.PLA).category).toBe('Pick a category')
+    expect(validate(product({ material: 'ABS', category: 'HF' }), presets.ABS).category).toBe('Pick a category')
+    expect(validate(product({ material: 'PETG', category: 'HF' }), presets['PETG HF'])).toEqual({})
+    expect(validate(product({ material: 'PETG', category: null }), presets.PETG)).toEqual({})
+  })
+  test('type sort groups by material, then category in list order', () => {
+    const get = sorts.find(s => s.key === 'type').get
+    const order = [['PLA', null], ['PLA', 'Pure'], ['PLA', 'PLA+'], ['PLA', 'Polylite'], ['PETG', null], ['PETG', 'HF']]
+      .map(([material, category]) => get(product({ material, category })))
+    expect([...order].sort((a, b) => a - b)).toEqual(order)
+    expect(new Set(order).size).toBe(order.length)
   })
 })

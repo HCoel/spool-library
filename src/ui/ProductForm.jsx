@@ -56,7 +56,7 @@ export default function ProductForm({ lib: defaultLib, editId, duplicateFrom }) 
   if (!state) return null
 
   const lib = getLibrary(state.libId)
-  const preset = presets[state.fields[lib.preset_key]] ?? {}
+  const preset = presets[lib.presetKeyOf(state.fields)] ?? {}
   const candidate = buildProduct(lib, state, preset, editId)
   const errors = lib.validate(candidate, preset)
   const valid = Object.keys(errors).length === 0

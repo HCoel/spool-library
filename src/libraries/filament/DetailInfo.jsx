@@ -1,6 +1,6 @@
 import { effectiveSettings } from '../../core/presets.js'
 import { formatGrams } from '../../core/amount.js'
-import { SETTING_KEYS, formatRange } from './definition.js'
+import { SETTING_KEYS, formatRange, presetKeyOf, typeLabel } from './definition.js'
 
 export default function DetailInfo({ product, preset }) {
   const f = product.fields
@@ -18,12 +18,12 @@ export default function DetailInfo({ product, preset }) {
     <>
       <p>
         {f.color_name && <strong>{f.color_name} · </strong>}
-        {f.finish} · {f.material} · {f.diameter} mm · {formatGrams(f.net_g)} spool
+        {f.finish} · {typeLabel(f)} · {f.diameter} mm · {formatGrams(f.net_g)} spool
       </p>
       {rows.length > 0
         ? <table class="settings-table"><tbody>{rows.map(([k, val, s]) => <tr key={k}><td class="muted">{k}</td><td>{val}{s}</td></tr>)}</tbody></table>
-        : <p class="muted">No print settings. Edit this product or the {f.material} preset.</p>}
-      {overridden.size > 0 && <p class="muted">★ differs from the {f.material} preset</p>}
+        : <p class="muted">No print settings. Edit this product or the {presetKeyOf(f)} preset.</p>}
+      {overridden.size > 0 && <p class="muted">★ differs from the {presetKeyOf(f)} preset</p>}
     </>
   )
 }
